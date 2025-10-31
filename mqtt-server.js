@@ -25,6 +25,22 @@ const ALLOW_RETAINED = false;
 // Logging (optioneel; zet op false voor rust)
 const LOG = true;
 
+function getCurrentDateTime() {
+    const now = new Date();
+
+    // ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+    console.log("ISO format:", now.toISOString());
+
+    // Local date and time
+    console.log("Local date/time:", now.toLocaleString());
+
+    // Custom format: YYYY-MM-DD HH:mm:ss
+    const pad = (n) => String(n).padStart(2, '0');
+    const formatted = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} `
+                    + `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    console.log("Custom format:", formatted);
+}
+
 // --- Auth (hier: alles toestaan) ---
 aedes.authenticate = (client, username, password, done) => {
   // Voor de klas meestal open; je kunt hier evt. basic checks doen.
@@ -35,8 +51,8 @@ aedes.authenticate = (client, username, password, done) => {
 aedes.authorizePublish = (client, packet, done) => {
   const topic = packet.topic || '';
 
-  if (!isAllowedTopic(topic)) {
-    const err = new Error('Publish not allowed to this topic');
+if (!isAllowedTopic(topic) || packet.payload?.length > 100){
+    const err = new Error('Publish or payload not allowed to this topic');
     err.returnCode = 128;
     return done(err);
   }
@@ -49,7 +65,7 @@ aedes.authorizePublish = (client, packet, done) => {
     packet.retain = false;
   }
 
-  if (LOG) console.log(`[PUB] ${client?.id || 'unknown'} -> ${topic} | ${packet.payload?.length || 0}B`);
+  if (LOG) console.log(`[PUB] ${getCurrentDateTime()} ${client?.id || 'unknown'} -> ${topic} | ${packet.payload}`);
   done(null);
 };
 
@@ -68,14 +84,14 @@ aedes.authorizeSubscribe = (client, sub, done) => {
 };
 
 // --- Events ---
-aedes.on('client', (client) => LOG && console.log(`[CONN] ${client?.id || 'unknown'}`));
-aedes.on('clientDisconnect', (client) => LOG && console.log(`[DISC] ${client?.id || 'unknown'}`));
-aedes.on('subscribe', (subs, client) => LOG && subs.forEach(s => console.log(`[EVT SUB] ${client?.id} ${s.topic}`)));
-aedes.on('unsubscribe', (subs, client) => LOG && subs.forEach(t => console.log(`[EVT UNSUB] ${client?.id} ${t}`)));
+aedes.on('client', (client) => LOG && console.log(`[CONN] ${getCurrentDateTime()} ${client?.id || 'unknown'}`));
+aedes.on('clientDisconnect', (client) => LOG && console.log(`[DISC] ${getCurrentDateTime()} ${client?.id || 'unknown'}`));
+aedes.on('subscribe', (subs, client) => LOG && subs.forEach(s => console.log(`[EVT SUB] ${getCurrentDateTime()} ${client?.id} ${s.topic}`)));
+aedes.on('unsubscribe', (subs, client) => LOG && subs.forEach(t => console.log(`[EVT UNSUB] ${getCurrentDateTime()} ${client?.id} ${t}`)));
 aedes.on('publish', (packet, client) => {
   // Filter eigen broker messages
   if (packet && packet.topic && !packet.topic.startsWith('$SYS/')) {
-    LOG && console.log(`[EVT PUB] ${client?.id || 'BROKER'} -> ${packet.topic}`);
+   // LOG && console.log(`[EVT PUB] ${client?.id || 'BROKER'} -> ${packet.topic}`);
   }
 });
 
