@@ -28,17 +28,11 @@ const LOG = true;
 function getCurrentDateTime() {
     const now = new Date();
 
-    // ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
-    console.log("ISO format:", now.toISOString());
-
-    // Local date and time
-    console.log("Local date/time:", now.toLocaleString());
-
     // Custom format: YYYY-MM-DD HH:mm:ss
     const pad = (n) => String(n).padStart(2, '0');
     const formatted = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} `
                     + `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    console.log("Custom format:", formatted);
+    return formatted;
 }
 
 // --- Auth (hier: alles toestaan) ---
