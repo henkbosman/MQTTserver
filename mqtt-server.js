@@ -14,7 +14,7 @@ const WS_PORT  = process.env.WS_PORT  || 8888;
 
 // --- Topic policy: alleen student/<id>/... toestaan
 function isAllowedTopic(topic) {
-  // Voorbeeld: student/12345/anything
+  // Voorbeeld: student/12345/topic
   return /^student\/[A-Za-z0-9_-]+(\/.*)?$/.test(topic);
 }
 
